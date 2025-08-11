@@ -24,7 +24,8 @@
       "package": "com.anonymous.murderpoops"
     },
     "web": {
-      "favicon": "./assets/images/beet.png"
+      "favicon": "./assets/images/beet.png",
+      "basePath": "/mp" 
     },
     "extra": {
       "eas": {
