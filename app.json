@@ -13,16 +13,26 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.anonymous.murder-poops"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.anonymous.murderpoops"
     },
     "web": {
-      "favicon": "./assets/favicon.png"
-    }
+      "favicon": "./assets/images/beet.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "0e365c0c-e149-45b8-85e3-cb0c244a40c4"
+      }
+    },
+    "plugins": [
+      "expo-font"
+    ]
   }
 }
