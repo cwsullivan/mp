@@ -22,7 +22,8 @@
     "react-native-web": "~0.19.13",
     "react-dom": "18.3.1",
     "@expo/metro-runtime": "~4.0.1",
-    "expo-av": "~15.0.2"
+    "expo-av": "~15.0.2",
+    "expo-notifications": "~0.29.14"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"

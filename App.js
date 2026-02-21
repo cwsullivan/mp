@@ -2,7 +2,17 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, Platform, ScrollView, TextInput } from 'react-native';
 import * as Font from 'expo-font';
 import { Audio } from 'expo-av';
+import * as Notifications from 'expo-notifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
+// Configure how notifications appear when app is in foreground
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  }),
+});
 
 // Cross-platform storage helper
 const Storage = {
@@ -52,14 +62,41 @@ export default function App() {
     setFontsLoaded(true);
   }
 
+  // Request notification permissions
+  async function requestNotificationPermissions() {
+    if (Platform.OS === 'web') return;
+
+    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    let finalStatus = existingStatus;
+
+    if (existingStatus !== 'granted') {
+      const { status } = await Notifications.requestPermissionsAsync();
+      finalStatus = status;
+    }
+
+    if (finalStatus !== 'granted') {
+      console.log('Notification permissions not granted');
+    }
+  }
+
   // Load saved events and settings on startup
   React.useEffect(() => {
     async function initializeApp() {
       await loadFonts();
       await loadSettings();
       await loadSavedEvents();
+      await requestNotificationPermissions();
     }
     initializeApp();
+
+    // Listen for notification taps
+    const subscription = Notifications.addNotificationResponseReceivedListener(response => {
+      // User tapped the notification - show the alert
+      setShowBeetAlert(true);
+      playChime();
+    });
+
+    return () => subscription.remove();
   }, []);
 
   // Save events whenever they change
@@ -212,27 +249,61 @@ export default function App() {
     }
   }
 
-  function scheduleMurderPoop() {
+  async function scheduleNotification(eventId, delaySeconds) {
+    if (Platform.OS === 'web') return null;
+
+    // Schedule notification for the future
+    const triggerDate = new Date(Date.now() + delaySeconds * 1000);
+
+    const notificationId = await Notifications.scheduleNotificationAsync({
+      content: {
+        title: "Murder Poops Reminder",
+        body: "Don't panic! You're not dying. It's just beets.",
+        data: { eventId },
+        sound: true,
+      },
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.DATE,
+        date: triggerDate,
+      },
+    });
+    return notificationId;
+  }
+
+  async function cancelAllNotifications() {
+    if (Platform.OS !== 'web') {
+      await Notifications.cancelAllScheduledNotificationsAsync();
+    }
+  }
+
+  async function scheduleMurderPoop() {
     const now = Date.now();
-    
+
     // Check debounce
     if (lastReportTime && debounceMinutes > 0) {
       const timeSinceLastReport = now - lastReportTime;
       const debounceMs = debounceMinutes * 60 * 1000;
-      
+
       if (timeSinceLastReport < debounceMs) {
         // Still in debounce period
         return;
       }
     }
 
+    const eventId = `beet-${now}`;
+    const delaySeconds = reminderHours * 60 * 60;
+
+    // Schedule system notification
+    const notificationId = await scheduleNotification(eventId, delaySeconds);
+
     // Create new beet event
     const newEvent = {
-      id: `beet-${now}`,
+      id: eventId,
       reportTime: now,
-      alertTime: now + (reminderHours * 60 * 60 * 1000), // Custom hours from settings
+      alertTime: now + (reminderHours * 60 * 60 * 1000),
       timeLeft: reminderHours * 60 * 60 * 1000,
-      totalHours: reminderHours // Store this so we can display it
+      totalHours: reminderHours,
+      notificationId: notificationId,
     };
 
     setBeetEvents(prev => [...prev, newEvent]);
@@ -312,6 +383,7 @@ export default function App() {
               setBeetEvents([]);
               setLastReportTime(null);
               await Storage.setItem(STORAGE_KEY, '[]');
+              await cancelAllNotifications();
               setShowBeetAlert(true);
               playChime();
             }}
