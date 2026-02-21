@@ -293,9 +293,10 @@ export default function App() {
               setBeetEvents([]);
               setLastReportTime(null);
               await Storage.setItem(STORAGE_KEY, '[]');
+              setShowBeetAlert(true);
             }}
           >
-            <Text style={styles.clearButtonText}>Clear All Timers</Text>
+            <Text style={styles.clearButtonText}>Accelerate All Timers</Text>
           </TouchableOpacity>
         )}
       </ScrollView>
