@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, Platform, ScrollView, TextInput } from 'react-native';
 import * as Font from 'expo-font';
+import { Audio } from 'expo-av';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Cross-platform storage helper
@@ -166,9 +167,27 @@ export default function App() {
     }
   }
 
+  async function playChime() {
+    try {
+      const { sound } = await Audio.Sound.createAsync(
+        require('./assets/sounds/chime.mp3')
+      );
+      await sound.playAsync();
+      // Unload after playing to free memory
+      sound.setOnPlaybackStatusUpdate((status) => {
+        if (status.didJustFinish) {
+          sound.unloadAsync();
+        }
+      });
+    } catch (error) {
+      console.log('Could not play chime:', error);
+    }
+  }
+
   function showReminder() {
     setShowBeetAlert(true);
-    
+    playChime();
+
     // Web-specific: Show browser notification if supported
     if (Platform.OS === 'web' && 'Notification' in window && Notification.permission === 'granted') {
       new Notification("Murder Poops Reminder", {
@@ -294,6 +313,7 @@ export default function App() {
               setLastReportTime(null);
               await Storage.setItem(STORAGE_KEY, '[]');
               setShowBeetAlert(true);
+              playChime();
             }}
           >
             <Text style={styles.clearButtonText}>Accelerate All Timers</Text>
