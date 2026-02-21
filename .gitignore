@@ -9,6 +9,9 @@ dist/
 web-build/
 expo-env.d.ts
 
+*.keystore
+android/app/debug.keystore
+
 # Native
 *.orig.*
 *.jks

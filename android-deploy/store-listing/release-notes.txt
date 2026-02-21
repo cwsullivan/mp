@@ -1,0 +1,7 @@
+Version 1.0.0 - Initial Release
+
+- Track when you eat beets
+- Get customizable reminders
+- Multiple concurrent timers
+- Settings for reminder duration and cooldown
+- Clean, fun interface with Comic Sans

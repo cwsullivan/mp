@@ -1,21 +1,31 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, Platform, ScrollView, TextInput } from 'react-native';
 import * as Font from 'expo-font';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Simple storage helper for web
+// Cross-platform storage helper
 const Storage = {
-  getItem(key) {
-    if (Platform.OS === 'web') {
-      return localStorage.getItem(key);
+  async getItem(key) {
+    try {
+      if (Platform.OS === 'web') {
+        return localStorage.getItem(key);
+      }
+      return await AsyncStorage.getItem(key);
+    } catch (error) {
+      console.error('Storage getItem error:', error);
+      return null;
     }
-    // For mobile, would need AsyncStorage
-    return null;
   },
-  setItem(key, value) {
-    if (Platform.OS === 'web') {
-      localStorage.setItem(key, value);
+  async setItem(key, value) {
+    try {
+      if (Platform.OS === 'web') {
+        localStorage.setItem(key, value);
+      } else {
+        await AsyncStorage.setItem(key, value);
+      }
+    } catch (error) {
+      console.error('Storage setItem error:', error);
     }
-    // For mobile, would need AsyncStorage
   }
 };
 
@@ -43,9 +53,12 @@ export default function App() {
 
   // Load saved events and settings on startup
   React.useEffect(() => {
-    loadFonts();
-    loadSettings();
-    loadSavedEvents();
+    async function initializeApp() {
+      await loadFonts();
+      await loadSettings();
+      await loadSavedEvents();
+    }
+    initializeApp();
   }, []);
 
   // Save events whenever they change
@@ -53,7 +66,7 @@ export default function App() {
     if (beetEvents.length > 0) {
       Storage.setItem(STORAGE_KEY, JSON.stringify(beetEvents));
     }
-  }, [beetEvents]);
+  }, [STORAGE_KEY, beetEvents]);
 
   // Update timers every second
   React.useEffect(() => {
@@ -95,9 +108,9 @@ export default function App() {
     return () => clearInterval(interval);
   }, [lastReportTime, debounceMinutes]);
 
-  function loadSettings() {
+  async function loadSettings() {
     try {
-      const saved = Storage.getItem(SETTINGS_KEY);
+      const saved = await Storage.getItem(SETTINGS_KEY);
       if (saved) {
         const settings = JSON.parse(saved);
         if (settings.reminderHours) {
@@ -114,31 +127,31 @@ export default function App() {
     }
   }
 
-  function saveSettings() {
+  async function saveSettings() {
     const hours = parseFloat(tempReminderHours);
     const minutes = parseFloat(tempDebounceMinutes);
-    
+
     if (!isNaN(hours) && hours > 0 && !isNaN(minutes) && minutes >= 0) {
       setReminderHours(hours);
       setDebounceMinutes(minutes);
-      Storage.setItem(SETTINGS_KEY, JSON.stringify({ 
+      await Storage.setItem(SETTINGS_KEY, JSON.stringify({
         reminderHours: hours,
-        debounceMinutes: minutes 
+        debounceMinutes: minutes
       }));
       setShowSettings(false);
     }
   }
 
-  function loadSavedEvents() {
+  async function loadSavedEvents() {
     try {
-      const saved = Storage.getItem(STORAGE_KEY);
+      const saved = await Storage.getItem(STORAGE_KEY);
       if (saved) {
         const events = JSON.parse(saved);
         const now = Date.now();
         // Filter out expired events
         const activeEvents = events.filter(e => e.alertTime > now);
         setBeetEvents(activeEvents);
-        
+
         // Find the most recent report time for debouncing
         if (activeEvents.length > 0) {
           const mostRecent = Math.max(...activeEvents.map(e => e.reportTime));
@@ -274,12 +287,12 @@ export default function App() {
         )}
 
         {beetEvents.length > 0 && (
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.clearButton}
-            onPress={() => {
+            onPress={async () => {
               setBeetEvents([]);
               setLastReportTime(null);
-              Storage.setItem(STORAGE_KEY, '[]');
+              await Storage.setItem(STORAGE_KEY, '[]');
             }}
           >
             <Text style={styles.clearButtonText}>Clear All Timers</Text>

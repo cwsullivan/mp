@@ -1,0 +1,23 @@
+Murder Poops - The Beet Reminder App
+
+Have you ever eaten beets and then completely forgotten about it? Hours later, you visit the bathroom and experience a moment of sheer terror when you see red. Sound familiar?
+
+Murder Poops is here to save you from unnecessary panic attacks!
+
+HOW IT WORKS:
+- Tap "I ate beets" after consuming beets
+- Set your custom reminder time (default: 10 hours)
+- When it's time, get a friendly reminder: "Don't panic! You're not dying. It's just beets."
+
+FEATURES:
+- Customizable reminder timing
+- Multiple concurrent beet timers
+- Cooldown period to prevent accidental double-taps
+- Clean, fun interface
+- No account required
+- No data collection
+- Works offline
+
+Perfect for beet lovers, health enthusiasts, and anyone who enjoys a good vegetable but has a short memory!
+
+Note: This app is for entertainment and personal reminder purposes only. If you have genuine health concerns, please consult a medical professional.
