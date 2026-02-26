@@ -25,6 +25,7 @@
       "package": "com.murderpoops.app",
       "versionCode": 1,
       "permissions": [],
+      "blockedPermissions": ["android.permission.RECORD_AUDIO"],
       "targetSdkVersion": 35
     },
     "web": {
